@@ -9,6 +9,15 @@ import (
 	"time"
 )
 
+type Release struct {
+	Year   int
+	Month  int
+	Shows  []ReleaseItem
+	Movies []ReleaseItem
+	Games  []ReleaseItem
+	Other  []ReleaseItem
+}
+
 type ReleaseItem struct {
 	Title    string
 	Comments string
@@ -21,24 +30,37 @@ const MOVIE = "movie"
 const GAME = "game"
 const OTHER = "other"
 
-const TIME_LAYOUT = "20060102"
+const CALENDAR_TIME_LAYOUT = "20060102"
+const FILE_TIME_LAYOUT = "02/01"
 
 const RECORD_START = "BEGIN:VEVENT"
-const RECORD_TIME = "DTSTART;VALUE=DATE:"
+const RECORD_DATE = "DTSTART;VALUE=DATE:"
 const RECORD_TITLE = "SUMMARY:"
 const RECORD_CATEGORY = "DESCRIPTION:"
 const RECORD_END = "END:VEVENT"
 
 func ConvertFileToText(filePath string, year int, month int) {
+	var release = Release{
+		Year:  year,
+		Month: month,
+	}
+
+	parseCalendar(filePath, &release)
+
+	// sorting does not seem to be required, as it is done by Google Calendar when adding events
+	fmt.Println("Shows", release.Shows)
+	fmt.Println("Movies", release.Movies)
+	fmt.Println("Games", release.Games)
+	fmt.Println("Other", release.Other)
+
+	exportToFile(&release)
+}
+
+func parseCalendar(filePath string, release *Release) {
 	source, err := os.Open(filePath)
 	utils.HandleError(err)
 
 	defer source.Close()
-
-	var shows []ReleaseItem
-	var movies []ReleaseItem
-	var games []ReleaseItem
-	var other []ReleaseItem
 
 	var item ReleaseItem
 
@@ -50,23 +72,27 @@ func ConvertFileToText(filePath string, year int, month int) {
 		var line = scanner.Text()
 		fmt.Println(line)
 
+		if !strings.HasPrefix(line, key) {
+			continue
+		}
+
 		// new calendar record starts with this
-		if key == RECORD_START && line == RECORD_START {
+		if line == RECORD_START {
 			fmt.Println("--New record found")
 			item = ReleaseItem{}
-			key = RECORD_TIME
+			key = RECORD_DATE
 			continue
 		}
 
 		// this is date and time of calendar record
-		if key == RECORD_TIME && strings.HasPrefix(line, RECORD_TIME) {
+		if strings.HasPrefix(line, RECORD_DATE) {
 			fmt.Println("--Found record date")
-			var datePart = utils.ExtractStringValue(line, RECORD_TIME)
-			var recordTime, err = time.Parse(TIME_LAYOUT, datePart)
+			var datePart = utils.ExtractStringValue(line, RECORD_DATE)
+			var recordTime, err = time.Parse(CALENDAR_TIME_LAYOUT, datePart)
 			utils.HandleError(err)
 
 			// this is the one we are looking for
-			if recordTime.Year() == year && int(recordTime.Month()) == month {
+			if recordTime.Year() == release.Year && int(recordTime.Month()) == release.Month {
 				fmt.Println("---Within target parameters")
 				item.Date = recordTime
 
@@ -79,7 +105,7 @@ func ConvertFileToText(filePath string, year int, month int) {
 		}
 
 		// this is the record category
-		if key == RECORD_CATEGORY && strings.HasPrefix(line, RECORD_CATEGORY) {
+		if strings.HasPrefix(line, RECORD_CATEGORY) {
 			fmt.Println("--Found record category")
 			var category = utils.ExtractStringValue(line, RECORD_CATEGORY)
 
@@ -90,7 +116,7 @@ func ConvertFileToText(filePath string, year int, month int) {
 		}
 
 		// this is the record title
-		if key == RECORD_TITLE && strings.HasPrefix(line, RECORD_TITLE) {
+		if strings.HasPrefix(line, RECORD_TITLE) {
 			fmt.Println("--Found record summary")
 			summary := utils.ExtractStringValue(line, RECORD_TITLE)
 
@@ -103,43 +129,35 @@ func ConvertFileToText(filePath string, year int, month int) {
 
 			switch strings.ToLower(item.Category) {
 			case SHOW:
-				shows = append(shows, item)
+				release.Shows = append(release.Shows, item)
 			case MOVIE:
-				movies = append(movies, item)
+				release.Movies = append(release.Movies, item)
 			case GAME:
-				games = append(games, item)
+				release.Games = append(release.Games, item)
 			default:
-				other = append(other, item)
+				release.Other = append(release.Other, item)
 			}
 
 			key = RECORD_START
 			continue
 		}
-
-		// end of file
-		if line == "END:VCALENDAR" {
-			fmt.Println("-- Reached end of file")
-		}
 	}
+}
 
-	// sorting does not seem to be required, as it is done by Google Calendar internally
-	fmt.Println("Shows", shows)
-	fmt.Println("Movies", movies)
-	fmt.Println("Games", games)
-	fmt.Println("Other", other)
-
-	fileName := fmt.Sprintf("releases-%d-%d.txt", month, year)
+func exportToFile(release *Release) {
+	fileName := fmt.Sprintf("releases-%d-%d.txt", release.Month, release.Year)
 	target, err := os.Create(fileName)
 	utils.HandleError(err)
+
 	defer target.Close()
 
 	w := bufio.NewWriter(target)
-	w.WriteString(getFileName(month))
+	w.WriteString(getFileName(release.Month))
 
-	printCategory(movies, "ФИЛЬМЫ", w)
-	printCategory(shows, "СЕРИАЛЫ", w)
-	printCategory(games, "ИГРЫ", w)
-	printCategory(other, "ДРУГОЕ", w)
+	printCategory(release.Movies, "ФИЛЬМЫ", w)
+	printCategory(release.Shows, "СЕРИАЛЫ", w)
+	printCategory(release.Games, "ИГРЫ", w)
+	printCategory(release.Other, "ДРУГОЕ", w)
 
 	w.Flush()
 }
@@ -187,9 +205,9 @@ func printReleaseItems(items []ReleaseItem, w *bufio.Writer) {
 	for _, i := range items {
 		var item string
 		if i.Comments != "" {
-			item = fmt.Sprintf("%s - **%s** - %s\n", i.Date.Format("02/01"), i.Title, i.Comments)
+			item = fmt.Sprintf("%s - **%s** - %s\n", i.Date.Format(FILE_TIME_LAYOUT), i.Title, i.Comments)
 		} else {
-			item = fmt.Sprintf("%s - **%s**\n", i.Date.Format("02/01"), i.Title)
+			item = fmt.Sprintf("%s - **%s**\n", i.Date.Format(FILE_TIME_LAYOUT), i.Title)
 		}
 
 		w.WriteString(item)

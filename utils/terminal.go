@@ -3,10 +3,7 @@ package utils
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -17,17 +14,8 @@ func GetFilePath(instruction string) string {
 	scanner.Scan()
 	path := scanner.Text()
 
-	validateFilePath(path)
+	ValidateFilePath(path)
 	return path
-}
-
-func validateFilePath(name string) {
-	if name == "" {
-		log.Fatalln("Value cannot be empty")
-	}
-	if !strings.HasSuffix(name, ".ics") {
-		log.Fatalln("This is probably not a Google Calendar file (.ics)")
-	}
 }
 
 func GetYearFromUser(instruction string) int {
@@ -37,9 +25,9 @@ func GetYearFromUser(instruction string) int {
 		return time.Now().Year()
 	}
 
-	validateYear(sYear)
+	ValidateYear(sYear)
 
-	return convertToNumber(sYear)
+	return ConvertToNumber(sYear)
 }
 
 func GetMonthFromUser(instruction string) int {
@@ -49,9 +37,10 @@ func GetMonthFromUser(instruction string) int {
 		return int(time.Now().Month())
 	}
 
-	validateMonth(sMonth)
+	month := ConvertToNumber(sMonth)
+	ValidateMonth(month)
 
-	return convertToNumber(sMonth)
+	return month
 }
 
 func getNumberFromUser(instruction string) string {
@@ -60,26 +49,4 @@ func getNumberFromUser(instruction string) string {
 	fmt.Println(instruction)
 	scanner.Scan()
 	return scanner.Text()
-}
-
-func validateYear(year string) {
-	if len([]rune(year)) < 4 {
-		log.Fatalln("Invalid year parameter, must contain 4 digits")
-	}
-}
-
-func validateMonth(month string) {
-	if len([]rune(month)) > 2 {
-		log.Fatalln("Invalid month parameter, must contain 1 or 2 digits")
-	}
-	if month == "0" {
-		log.Fatalln("Invalid month parameter, must be between 1 and 12")
-	}
-}
-
-func convertToNumber(sValue string) int {
-	number, err := strconv.Atoi(sValue)
-	HandleError(err)
-
-	return number
 }

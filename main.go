@@ -14,7 +14,7 @@ func main() {
 	year = utils.GetYearFromUser("Specify year (as 2023) to look for, leave empty to user current")
 	month = utils.GetMonthFromUser("Specify month (as 1 or 10) to look for, leave empty to use current")
 
-	release := converter.ConvertFileToText(filePath, year, month)
+	release := converter.GetParsedReleases(filePath, year, month)
 
-	utils.ExportToFile(&release)
+	converter.ExportToFile(&release)
 }

@@ -23,7 +23,9 @@ const RECORD_TITLE = "SUMMARY:"
 const RECORD_CATEGORY = "DESCRIPTION:"
 const RECORD_END = "END:VEVENT"
 
-func ConvertFileToText(filePath string, year int, month int) model.Release {
+const EVENT_TITLE_DELIMITER = " - "
+
+func GetParsedReleases(filePath string, year int, month int) model.Release {
 	var release = model.Release{
 		Year:  year,
 		Month: month,
@@ -106,11 +108,15 @@ func parseCalendar(filePath string, release *model.Release) {
 			fmt.Println("--Found record summary")
 			summary := utils.ExtractStringValue(line, RECORD_TITLE)
 
-			sumParts := strings.Split(summary, " - ")
+			sumParts := strings.Split(summary, EVENT_TITLE_DELIMITER)
 			item.Title = sumParts[0]
 
 			if len(sumParts) > 1 {
-				item.Comments = sumParts[len(sumParts)-1]
+				for i := 1; i < len(sumParts)-1; i++ {
+					item.Title += EVENT_TITLE_DELIMITER + sumParts[i]
+				}
+				// replace "/," when using commas in Google Calendar event title
+				item.Comments = strings.Replace(sumParts[len(sumParts)-1], "\\,", ",", -1)
 			}
 
 			switch strings.ToLower(item.Category) {

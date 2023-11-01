@@ -1,8 +1,9 @@
-package utils
+package converter
 
 import (
 	"bufio"
 	"dharlequin/google-calendar-converter/model"
+	"dharlequin/google-calendar-converter/utils"
 	"fmt"
 	"os"
 	"strings"
@@ -13,7 +14,7 @@ const FILE_TIME_LAYOUT = "02/01"
 func ExportToFile(release *model.Release) {
 	fileName := fmt.Sprintf("releases-%d-%d.txt", release.Month, release.Year)
 	target, err := os.Create(fileName)
-	HandleError(err)
+	utils.HandleError(err)
 
 	defer target.Close()
 

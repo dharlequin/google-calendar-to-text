@@ -21,11 +21,20 @@ func ExtractStringValue(line string, target string) string {
 	return strings.ReplaceAll(line, target, "")
 }
 
-func ConvertToNumber(sValue string) int {
+func NormalizeString(value string) string {
+	// replace "/," when using commas in Google Calendar event title
+	return strings.Replace(value, "\\,", ",", -1)
+}
+
+func StringToNumber(sValue string) int {
 	number, err := strconv.Atoi(sValue)
 	HandleError(err)
 
 	return number
+}
+
+func NumberToString(iValue int) string {
+	return strconv.FormatInt(int64(iValue), 10)
 }
 
 func ValidateMonth(month int) {

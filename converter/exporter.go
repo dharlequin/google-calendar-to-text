@@ -55,7 +55,7 @@ func getFileName(month int) string {
 	case 11:
 		sMonth = "ноября"
 	case 12:
-		sMonth = "января"
+		sMonth = "декабря"
 	}
 
 	return strings.ToUpper(fmt.Sprintf("**релизы %s**\n\n", sMonth))

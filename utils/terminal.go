@@ -19,25 +19,29 @@ func GetFilePath(instruction string) string {
 }
 
 func GetYearFromUser(instruction string) int {
-	sYear := getNumberFromUser(instruction)
+	currentYear := time.Now().Year()
+
+	sYear := getNumberFromUser(fmt.Sprintf(instruction, NumberToString(currentYear)))
 
 	if sYear == "" {
-		return time.Now().Year()
+		return currentYear
 	}
 
 	ValidateYear(sYear)
 
-	return ConvertToNumber(sYear)
+	return StringToNumber(sYear)
 }
 
 func GetMonthFromUser(instruction string) int {
-	sMonth := getNumberFromUser(instruction)
+	currentMonth := time.Now().Month()
+
+	sMonth := getNumberFromUser(fmt.Sprintf(instruction, currentMonth.String()))
 
 	if sMonth == "" {
-		return int(time.Now().Month())
+		return int(currentMonth)
 	}
 
-	month := ConvertToNumber(sMonth)
+	month := StringToNumber(sMonth)
 	ValidateMonth(month)
 
 	return month

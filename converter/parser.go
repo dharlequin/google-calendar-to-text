@@ -107,6 +107,7 @@ func parseCalendar(filePath string, release *model.Release) {
 		if strings.HasPrefix(line, RECORD_TITLE) {
 			fmt.Println("--Found record summary")
 			summary := utils.ExtractStringValue(line, RECORD_TITLE)
+			summary = utils.NormalizeString(summary)
 
 			sumParts := strings.Split(summary, EVENT_TITLE_DELIMITER)
 			item.Title = sumParts[0]
@@ -115,8 +116,8 @@ func parseCalendar(filePath string, release *model.Release) {
 				for i := 1; i < len(sumParts)-1; i++ {
 					item.Title += EVENT_TITLE_DELIMITER + sumParts[i]
 				}
-				// replace "/," when using commas in Google Calendar event title
-				item.Comments = strings.Replace(sumParts[len(sumParts)-1], "\\,", ",", -1)
+
+				item.Comments = sumParts[len(sumParts)-1]
 			}
 
 			switch strings.ToLower(item.Category) {

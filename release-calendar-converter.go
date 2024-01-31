@@ -6,10 +6,10 @@ import (
 	"fmt"
 )
 
-var Version = "v1.1.2"
+var Version = "v1.1.3"
 
 func main() {
-	fmt.Println("Version:\t", Version)
+	fmt.Printf("Version:\t%v\n\n", Version)
 
 	var filePath string
 	var year int

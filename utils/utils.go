@@ -2,11 +2,15 @@ package utils
 
 import (
 	"dharlequin/google-calendar-converter/model"
+	"fmt"
 	"log"
 	"sort"
 	"strconv"
 	"strings"
 )
+
+const LOG_MESSAGE_DELIMITER = "--"
+const LOG_RECORD_DELIMITER = "  "
 
 func ValidateFilePath(name string) {
 	if name == "" {
@@ -65,4 +69,24 @@ func sortCategory(items []model.ReleaseItem) {
 	sort.SliceStable(items, func(i, j int) bool {
 		return items[i].Date.Before(items[j].Date)
 	})
+}
+
+func AddEmptyLine() {
+	fmt.Println()
+}
+
+func PrintParserLog(message string, record string, level int) {
+	var messagePrefix string
+	var recordPrefix string
+
+	for i := 0; i < level; i++ {
+		messagePrefix += LOG_MESSAGE_DELIMITER
+		recordPrefix += LOG_RECORD_DELIMITER
+	}
+
+	fmt.Println(messagePrefix, message)
+
+	if record != "" {
+		fmt.Println(recordPrefix, record)
+	}
 }

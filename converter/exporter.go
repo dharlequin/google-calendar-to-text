@@ -19,17 +19,20 @@ func ExportToFile(release *model.Release) {
 	defer target.Close()
 
 	w := bufio.NewWriter(target)
-	w.WriteString(getFileName(release.Month))
 
-	printCategory(release.Movies, "ФИЛЬМЫ", w)
-	printCategory(release.Shows, "СЕРИАЛЫ", w)
-	printCategory(release.Games, "ИГРЫ", w)
-	printCategory(release.Other, "ДРУГОЕ", w)
+	w.WriteString(getTitleName(release.Month))
+
+	writeCategory(release.Movies, "ФИЛЬМЫ", w)
+	writeCategory(release.Shows, "СЕРИАЛЫ", w)
+	writeCategory(release.Games, "ИГРЫ", w)
+	writeCategory(release.Other, "ДРУГОЕ", w)
 
 	w.Flush()
+
+	fmt.Println("Created file:", fileName)
 }
 
-func getFileName(month int) string {
+func getTitleName(month int) string {
 	var sMonth string
 	switch month {
 	case 1:
@@ -61,14 +64,14 @@ func getFileName(month int) string {
 	return strings.ToUpper(fmt.Sprintf("**релизы %s**\n\n", sMonth))
 }
 
-func printCategory(items []model.ReleaseItem, category string, w *bufio.Writer) {
+func writeCategory(items []model.ReleaseItem, category string, w *bufio.Writer) {
 	if len(items) > 0 {
 		w.WriteString(fmt.Sprintf("**%s:**\n\n", category))
-		printReleaseItems(items, w)
+		writeReleaseItems(items, w)
 	}
 }
 
-func printReleaseItems(items []model.ReleaseItem, w *bufio.Writer) {
+func writeReleaseItems(items []model.ReleaseItem, w *bufio.Writer) {
 	for _, i := range items {
 		var item string
 		if i.Comments != "" {

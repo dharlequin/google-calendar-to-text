@@ -33,11 +33,15 @@ func GetParsedReleases(filePath string, year int, month int) model.Release {
 
 	parseCalendar(filePath, &release)
 
-	// sorting does not seem to be required, as it is done by Google Calendar when adding events
-	fmt.Println("Shows", release.Shows)
-	fmt.Println("Movies", release.Movies)
-	fmt.Println("Games", release.Games)
-	fmt.Println("Other", release.Other)
+	utils.AddEmptyLine()
+	fmt.Println("Shows:", release.Shows)
+	utils.AddEmptyLine()
+	fmt.Println("Movies:", release.Movies)
+	utils.AddEmptyLine()
+	fmt.Println("Games:", release.Games)
+	utils.AddEmptyLine()
+	fmt.Println("Other:", release.Other)
+	utils.AddEmptyLine()
 
 	utils.SortCategories(&release)
 
@@ -58,7 +62,6 @@ func parseCalendar(filePath string, release *model.Release) {
 	scanner := bufio.NewScanner(source)
 	for scanner.Scan() {
 		var line = scanner.Text()
-		fmt.Println(line)
 
 		if !strings.HasPrefix(line, key) {
 			continue
@@ -66,7 +69,9 @@ func parseCalendar(filePath string, release *model.Release) {
 
 		// new calendar record starts with this
 		if line == RECORD_START {
-			fmt.Println("--New record found")
+			utils.AddEmptyLine()
+			utils.PrintParserLog("New record found:", line, 1)
+
 			item = model.ReleaseItem{}
 			key = RECORD_DATE
 			continue
@@ -74,19 +79,23 @@ func parseCalendar(filePath string, release *model.Release) {
 
 		// this is date and time of calendar record
 		if strings.HasPrefix(line, RECORD_DATE) {
-			fmt.Println("--Found record date")
+			utils.PrintParserLog("Found record date:", line, 2)
+
 			var datePart = utils.ExtractStringValue(line, RECORD_DATE)
 			var recordTime, err = time.Parse(CALENDAR_TIME_LAYOUT, datePart)
 			utils.HandleError(err)
 
 			// this is the one we are looking for
 			if recordTime.Year() == release.Year && int(recordTime.Month()) == release.Month {
-				fmt.Println("---Within target parameters")
+				utils.PrintParserLog("Within target parameters:", "", 3)
+
 				item.Date = recordTime
 
 				key = RECORD_CATEGORY
 				continue
 			} else {
+				utils.PrintParserLog("Outside of target parameters", "", 3)
+
 				key = RECORD_START
 				continue
 			}
@@ -94,7 +103,8 @@ func parseCalendar(filePath string, release *model.Release) {
 
 		// this is the record category
 		if strings.HasPrefix(line, RECORD_CATEGORY) {
-			fmt.Println("--Found record category")
+			utils.PrintParserLog("Found record category:", line, 2)
+
 			var category = utils.ExtractStringValue(line, RECORD_CATEGORY)
 
 			item.Category = category
@@ -105,7 +115,8 @@ func parseCalendar(filePath string, release *model.Release) {
 
 		// this is the record title
 		if strings.HasPrefix(line, RECORD_TITLE) {
-			fmt.Println("--Found record summary")
+			utils.PrintParserLog("Found record summary:", line, 2)
+
 			summary := utils.ExtractStringValue(line, RECORD_TITLE)
 			summary = utils.NormalizeString(summary)
 

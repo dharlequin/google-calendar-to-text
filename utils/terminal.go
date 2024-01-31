@@ -12,6 +12,7 @@ func GetFilePath(instruction string) string {
 
 	fmt.Println(instruction)
 	scanner.Scan()
+	AddEmptyLine()
 	path := scanner.Text()
 
 	ValidateFilePath(path)
@@ -51,6 +52,8 @@ func getNumberFromUser(instruction string) string {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	fmt.Println(instruction)
+	// scanner.Scan() is used here to allow for empty inputs, which is not possible with fmt.Scan()
 	scanner.Scan()
+	AddEmptyLine()
 	return scanner.Text()
 }

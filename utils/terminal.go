@@ -35,11 +35,17 @@ func GetYearFromUser(instruction string) int {
 
 func GetMonthFromUser(instruction string) int {
 	currentMonth := time.Now().Month()
+	nextMonth := currentMonth + 1
 
-	sMonth := getNumberFromUser(fmt.Sprintf(instruction, currentMonth.String()))
+	// account for December to January
+	if currentMonth == 12 {
+		nextMonth = 1
+	}
+
+	sMonth := getNumberFromUser(fmt.Sprintf(instruction, nextMonth.String()))
 
 	if sMonth == "" {
-		return int(currentMonth)
+		return int(nextMonth)
 	}
 
 	month := StringToNumber(sMonth)

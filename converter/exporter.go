@@ -61,27 +61,28 @@ func getTitleName(month int) string {
 		sMonth = "декабря"
 	}
 
-	return strings.ToUpper(fmt.Sprintf("**релизы %s**\n\n", sMonth))
+	return strings.ToUpper(fmt.Sprintf("**релизы %s**", sMonth))
 }
 
 func writeCategory(items []model.ReleaseItem, category string, w *bufio.Writer) {
 	if len(items) > 0 {
-		w.WriteString(fmt.Sprintf("**%s:**\n\n", category))
+		w.WriteString(fmt.Sprintf("\n\n**%s:**\n\n", category))
 		writeReleaseItems(items, w)
 	}
 }
 
 func writeReleaseItems(items []model.ReleaseItem, w *bufio.Writer) {
-	for _, i := range items {
-		var item string
+	for index, i := range items {
+		var text string
 		if i.Comments != "" {
-			item = fmt.Sprintf("%s - **%s** - %s\n", i.Date.Format(FILE_TIME_LAYOUT), i.Title, i.Comments)
+			text = fmt.Sprintf("%s - **%s** - %s", i.Date.Format(FILE_TIME_LAYOUT), i.Title, i.Comments)
 		} else {
-			item = fmt.Sprintf("%s - **%s**\n", i.Date.Format(FILE_TIME_LAYOUT), i.Title)
+			text = fmt.Sprintf("%s - **%s**", i.Date.Format(FILE_TIME_LAYOUT), i.Title)
+		}
+		if index != len(items)-1 {
+			text += "\n"
 		}
 
-		w.WriteString(item)
+		w.WriteString(text)
 	}
-
-	w.WriteString("\n")
 }

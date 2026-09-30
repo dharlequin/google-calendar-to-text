@@ -121,7 +121,7 @@ func parseCalendar(filePath string, release *model.Release) {
 			summary = utils.NormalizeString(summary)
 
 			sumParts := strings.Split(summary, EVENT_TITLE_DELIMITER)
-			item.Title = sumParts[0]
+			item.Title = strings.TrimSpace(sumParts[0])
 
 			if len(sumParts) > 1 {
 				for i := 1; i < len(sumParts)-1; i++ {

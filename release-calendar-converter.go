@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-var Version = "v1.1.4"
+var Version = "v1.1.5"
 
 func main() {
 	fmt.Printf("Version:\t%v\n\n", Version)
